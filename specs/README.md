@@ -1,5 +1,7 @@
 # Convenção de specs
 
+`BACKLOG.md` é a fonte da verdade de quantas User Stories (US) o projeto todo tem e qual o status de cada uma — consulte-o antes de criar uma spec nova, em vez de perguntar/assumir um número.
+
 Cada feature vive em uma pasta numerada: `specs/<NN>-<slug>/`, por exemplo `specs/001-create-coupon/`.
 
 Dentro de cada pasta, até três arquivos, gerados nesta ordem pelo fluxo SDD do projeto:
