@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: coupon-challenge
+  jpa:
+    open-in-view: false
