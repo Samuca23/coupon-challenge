@@ -135,10 +135,12 @@ src/main/java/.../coupon/
 
 Este projeto usa Spec-Driven Development via skills próprias em `.claude/skills/`:
 
-1. **`/specify`** — transforma uma regra/requisito em `specs/<NN>-<slug>/spec.md` (regras numeradas e testáveis, contrato, casos de borda, critérios de aceite).
+1. **`/specify`** — transforma uma regra/requisito em `specs/<NN>-<slug>/spec.md` (regras numeradas e testáveis, contrato, casos de borda, critérios de aceite). Antes disso, consulta/propõe `specs/BACKLOG.md` com todas as US do projeto.
 2. **`/plan`** — a partir da spec, gera `specs/<NN>-<slug>/plan.md` (domínio, ports, use case, adapters, testes previstos), respeitando a arquitetura da seção 7.
-3. **`/tasks`** — quebra o plano em `specs/<NN>-<slug>/tasks.md`, uma lista ordenada de tarefas pequenas, cada uma = um commit atômico.
-4. **`/review-commit`** — checklist de arquitetura/testes/tamanho do commit, rodado antes de cada `git commit` e antes de abrir PR.
+3. **`/tasks`** — quebra o plano em `specs/<NN>-<slug>/tasks.md`, uma lista ordenada de tarefas pequenas, cada uma = um commit atômico, e cria a branch `feat/US<NN>-<slug>`.
+4. **`/implementar US<NN>-<slug>`** — implementa, tarefa por tarefa, tudo que está em `tasks.md`, rodando teste depois de cada uma, sem commitar. Termina com um changelog explicando cada decisão.
+5. **`/audit`** — confere divergência entre `spec.md` e o código implementado (regra não implementada, implementada diferente do especificado, ou sem teste). Gera `specs/<NN>-<slug>/audit.md`.
+6. **`/review-commit`** — só roda depois do `/audit` sem divergência pendente: checklist de arquitetura, sugestão de split em commits atômicos (um por tarefa) e mensagens no padrão Conventional Commits, antes de abrir PR.
 
 Nenhum código de produção deve ser escrito antes de existir spec + plano para a feature. Ver `specs/README.md` para a convenção de pastas.
 

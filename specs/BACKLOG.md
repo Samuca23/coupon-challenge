@@ -4,10 +4,10 @@ Fonte da verdade de quantas US o projeto tem, números/slugs reservados e status
 
 | US | Slug | Branch | Status | Descrição |
 |---|---|---|---|---|
-| US001 | create-coupon | feat/US001-create-coupon | planejado | Criar cupom com todas as regras de validação (code normalizado a 6 chars, discountValue ≥ 0,5, expirationDate não pode ser passado, published opcional, status ACTIVE) |
+| US001 | create-coupon | feat/US001-create-coupon | especificado | Criar cupom com todas as regras de validação (code normalizado a 6 chars, discountValue ≥ 0,5, expirationDate não pode ser passado, published opcional, status ACTIVE) |
 | US002 | delete-coupon | feat/US002-delete-coupon | planejado | Soft delete de cupom (transição de status para DELETED), incluindo a regra de não permitir deletar um cupom já deletado |
 
-Status possíveis: `planejado` → `especificado` (spec.md pronto) → `planejado-tecnicamente` (plan.md pronto) → `em desenvolvimento` (branch ativa, tasks.md em andamento) → `concluído` (PR mergeado em `develop`).
+Status possíveis: `planejado` → `especificado` (spec.md pronto) → `planejado-tecnicamente` (plan.md pronto) → `em desenvolvimento` (branch ativa, tasks.md pronto) → `implementado` (`/implementar` rodou, sem commit ainda) → `auditado` (`/audit` sem divergência pendente) → `concluído` (PR mergeado em `develop`).
 
 ## Fora do backlog (chores, sem regra de negócio — não viram US)
 
