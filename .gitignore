@@ -37,3 +37,6 @@ build/
 
 ### Claude Code (local only, não versionado) ###
 .claude/
+
+### SDD (specs locais, não versionadas) ###
+specs/

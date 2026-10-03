@@ -141,6 +141,7 @@ Este projeto usa Spec-Driven Development via skills próprias em `.claude/skills
 4. **`/implementar US<NN>-<slug>`** — implementa, tarefa por tarefa, tudo que está em `tasks.md`, rodando teste depois de cada uma, sem commitar. Termina com um changelog explicando cada decisão.
 5. **`/audit`** — confere divergência entre `spec.md` e o código implementado (regra não implementada, implementada diferente do especificado, ou sem teste). Gera `specs/<NN>-<slug>/audit.md`.
 6. **`/review-commit`** — só roda depois do `/audit` sem divergência pendente: checklist de arquitetura, sugestão de split em commits atômicos (um por tarefa) e mensagens no padrão Conventional Commits, antes de abrir PR.
+7. **`/fechar-us`** — depois do PR mergeado em `develop`, reverifica na fonte (arquivos + git) que todas as etapas realmente aconteceram, e só então marca a US como `concluído` em `specs/BACKLOG.md`.
 
 Nenhum código de produção deve ser escrito antes de existir spec + plano para a feature. Ver `specs/README.md` para a convenção de pastas.
 
