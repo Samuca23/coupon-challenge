@@ -142,7 +142,29 @@ Este projeto usa Spec-Driven Development via skills próprias em `.claude/skills
 
 Nenhum código de produção deve ser escrito antes de existir spec + plano para a feature. Ver `specs/README.md` para a convenção de pastas.
 
-## 9. Observações de processo
+## 9. Fluxo de branches e PRs
+
+Três níveis, para deixar o histórico git legível e revisável (parte do capricho sênior do processo, não exigência formal do desafio):
+
+```
+feat/US001-create-coupon  ┐
+feat/US002-delete-coupon  ┴─→  develop  ──→  main
+```
+
+- **`main`** — estado sempre entregável. Só recebe merge de `develop` via PR, nunca commit direto.
+- **`develop`** — branch de integração. Recebe merge de cada `feat/USxxx-slug` via PR.
+- **`feat/USxxx-slug`** — uma branch por spec em `specs/`. O número da US é o mesmo número da pasta da spec (`specs/001-create-coupon` → `feat/US001-create-coupon`), pra rastrear feature → branch → PR sem ambiguidade.
+
+Regras:
+1. Toda `feat/USxxx-*` nasce de `develop` atualizada (`git checkout develop && git pull && git checkout -b feat/US00X-slug`).
+2. Dentro da branch, os commits seguem o `tasks.md` da spec (um commit por tarefa, `/review-commit` antes de cada um).
+3. PR de `feat/USxxx-*` → `develop`: descrição referenciando a spec (`specs/00X-slug/spec.md`), o que mudou, como testar. Usa o template em `.github/pull_request_template.md`.
+4. PR de `develop` → `main`: só depois que as features incluídas estiverem com testes passando — é o "corte de release".
+5. Depois do merge em `develop`, a branch `feat/USxxx-*` pode ser apagada (local e remota).
+
+> Dica: no GitHub, vale configurar *branch protection* em `main` e `develop` (Settings → Branches) pra exigir PR em vez de push direto — isso não dá pra automatizar por aqui sem um token de API, então é um passo manual seu.
+
+## 10. Observações de processo
 
 - Samuel cria o esqueleto do projeto manualmente no Spring Initializr — não gerar o projeto via automação.
 - Ao desenvolver com IA, manter contexto completo do código no chat técnico de entrevista — evitar que a IA execute todo o fluxo sozinha sem o Samuel entender cada decisão (ele precisa defender o código numa conversa técnica depois).
