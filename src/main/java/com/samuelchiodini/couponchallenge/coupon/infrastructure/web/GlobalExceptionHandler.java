@@ -1,5 +1,7 @@
 package com.samuelchiodini.couponchallenge.coupon.infrastructure.web;
 
+import com.samuelchiodini.couponchallenge.coupon.domain.exceptions.CouponAlreadyDeletedException;
+import com.samuelchiodini.couponchallenge.coupon.domain.exceptions.CouponNotFoundException;
 import com.samuelchiodini.couponchallenge.coupon.domain.exceptions.InvalidCouponCodeException;
 import com.samuelchiodini.couponchallenge.coupon.domain.exceptions.InvalidDiscountValueException;
 import com.samuelchiodini.couponchallenge.coupon.domain.exceptions.InvalidExpirationDateException;
@@ -10,6 +12,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.List;
 
@@ -49,5 +52,23 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleInvalidExpiration(InvalidExpirationDateException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(ErrorResponse.of("INVALID_EXPIRATION_DATE", ex.getMessage()));
+    }
+
+    @ExceptionHandler(CouponNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleCouponNotFound(CouponNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ErrorResponse.of("COUPON_NOT_FOUND", ex.getMessage()));
+    }
+
+    @ExceptionHandler(CouponAlreadyDeletedException.class)
+    public ResponseEntity<ErrorResponse> handleCouponAlreadyDeleted(CouponAlreadyDeletedException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ErrorResponse.of("COUPON_ALREADY_DELETED", ex.getMessage()));
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        return ResponseEntity.badRequest()
+                .body(ErrorResponse.of("MALFORMED_REQUEST", "parâmetro '" + ex.getName() + "' inválido"));
     }
 }
