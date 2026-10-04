@@ -3,6 +3,7 @@ package com.samuelchiodini.couponchallenge.coupon.infrastructure.persistence;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -28,6 +29,9 @@ public class CouponJpaEntity {
     private boolean published;
 
     private boolean redeemed;
+
+    @Version
+    private Long version;
 
     public UUID getId() {
         return id;
@@ -91,5 +95,13 @@ public class CouponJpaEntity {
 
     public void setRedeemed(boolean redeemed) {
         this.redeemed = redeemed;
+    }
+
+    public Long getVersion() {
+        return version;
+    }
+
+    public void setVersion(Long version) {
+        this.version = version;
     }
 }

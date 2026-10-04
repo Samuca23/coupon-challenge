@@ -5,7 +5,13 @@ import com.samuelchiodini.couponchallenge.coupon.domain.Coupon;
 import com.samuelchiodini.couponchallenge.coupon.domain.CouponCode;
 import com.samuelchiodini.couponchallenge.coupon.domain.CouponStatus;
 import com.samuelchiodini.couponchallenge.coupon.domain.DiscountValue;
+import com.samuelchiodini.couponchallenge.coupon.domain.exceptions.CouponAlreadyDeletedException;
+import com.samuelchiodini.couponchallenge.coupon.domain.exceptions.CouponNotFoundException;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Component;
+
+import java.util.Optional;
+import java.util.UUID;
 
 @Component
 public class CouponRepositoryAdapter implements CouponRepositoryPort {
@@ -18,8 +24,22 @@ public class CouponRepositoryAdapter implements CouponRepositoryPort {
 
     @Override
     public Coupon save(Coupon coupon) {
-        CouponJpaEntity saved = couponJpaRepository.save(toEntity(coupon));
-        return toDomain(saved);
+        try {
+            CouponJpaEntity saved = couponJpaRepository.save(toEntity(coupon));
+            return toDomain(saved);
+        } catch (OptimisticLockingFailureException ex) {
+            CouponJpaEntity fresh = couponJpaRepository.findById(coupon.getId())
+                    .orElseThrow(() -> new CouponNotFoundException(coupon.getId()));
+            if (CouponStatus.DELETED.name().equals(fresh.getStatus())) {
+                throw new CouponAlreadyDeletedException(coupon.getId());
+            }
+            throw ex;
+        }
+    }
+
+    @Override
+    public Optional<Coupon> findById(UUID id) {
+        return couponJpaRepository.findById(id).map(this::toDomain);
     }
 
     private CouponJpaEntity toEntity(Coupon coupon) {
@@ -32,6 +52,7 @@ public class CouponRepositoryAdapter implements CouponRepositoryPort {
         entity.setStatus(coupon.getStatus().name());
         entity.setPublished(coupon.isPublished());
         entity.setRedeemed(coupon.isRedeemed());
+        entity.setVersion(coupon.getVersion());
         return entity;
     }
 
@@ -44,6 +65,7 @@ public class CouponRepositoryAdapter implements CouponRepositoryPort {
                 entity.getExpirationDate(),
                 CouponStatus.valueOf(entity.getStatus()),
                 entity.isPublished(),
-                entity.isRedeemed());
+                entity.isRedeemed(),
+                entity.getVersion());
     }
 }
