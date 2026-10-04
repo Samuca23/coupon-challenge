@@ -17,8 +17,10 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -317,5 +319,14 @@ class CouponControllerTest {
         mockMvc.perform(delete("/coupon/{id}", "abc"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("MALFORMED_REQUEST"));
+    }
+
+    @Test
+    void listsAllCouponsIncludingTheOnesJustCreated() throws Exception {
+        UUID id = createCoupon();
+
+        mockMvc.perform(get("/coupon"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[*].id", hasItem(id.toString())));
     }
 }

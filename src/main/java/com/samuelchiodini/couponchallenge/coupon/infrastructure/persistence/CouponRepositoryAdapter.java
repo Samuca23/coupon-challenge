@@ -10,6 +10,7 @@ import com.samuelchiodini.couponchallenge.coupon.domain.exceptions.CouponNotFoun
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -40,6 +41,11 @@ public class CouponRepositoryAdapter implements CouponRepositoryPort {
     @Override
     public Optional<Coupon> findById(UUID id) {
         return couponJpaRepository.findById(id).map(this::toDomain);
+    }
+
+    @Override
+    public List<Coupon> findAll() {
+        return couponJpaRepository.findAll().stream().map(this::toDomain).toList();
     }
 
     private CouponJpaEntity toEntity(Coupon coupon) {
