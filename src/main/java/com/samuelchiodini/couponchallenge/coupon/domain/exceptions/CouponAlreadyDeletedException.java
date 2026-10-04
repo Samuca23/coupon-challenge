@@ -5,6 +5,6 @@ import java.util.UUID;
 public class CouponAlreadyDeletedException extends RuntimeException {
 
     public CouponAlreadyDeletedException(UUID couponId) {
-        super("coupon " + couponId + " is already deleted");
+        super("cupom " + couponId + " já está deletado");
     }
 }
