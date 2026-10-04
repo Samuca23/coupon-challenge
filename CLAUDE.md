@@ -78,6 +78,7 @@ Apenas o endpoint de criação está formalmente documentado no apidog. O endpoi
 - Pode ser deletado a qualquer momento.
 - **Soft delete**: o registro não pode ser perdido do banco — provavelmente via transição de `status` para `DELETED` (o enum de status já inclui `ACTIVE / INACTIVE / DELETED`, então soft delete = mudança de status, não uma flag `deleted` separada nem remoção física).
 - **Não é possível deletar um cupom já deletado** — isso é regra de domínio, não só uma checagem de infraestrutura, e precisa ser testada (vão tentar "quebrar" essa regra).
+- **Concorrência (decisão de estratégia):** a regra acima, sozinha, só cobre duas chamadas *sequenciais* (`Coupon.delete()` no domínio lança exceção se o status já é `DELETED`). Pra cobrir duas chamadas *simultâneas* no mesmo cupom (race condition: ambas leem `ACTIVE` antes de qualquer uma salvar), a entidade JPA (`CouponJpaEntity`, infraestrutura — nunca o `Coupon` de domínio) ganha um campo `@Version`. O adapter de persistência, ao salvar, trata a `OptimisticLockingFailureException` do Spring Data: recarrega o cupom e, se o status atual já é `DELETED`, relança a mesma exceção de domínio de "já deletado" (mesmo contrato de erro pro cliente); senão, propaga o erro normalmente. Domínio decide a regra, banco garante que ela sobrevive à concorrência real.
 
 ## 5. Decisões em aberto (a validar com o Samuel antes/durante o desenvolvimento)
 
