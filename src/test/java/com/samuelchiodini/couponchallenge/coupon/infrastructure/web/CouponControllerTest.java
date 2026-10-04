@@ -1,18 +1,24 @@
 package com.samuelchiodini.couponchallenge.coupon.infrastructure.web;
 
 import tools.jackson.databind.ObjectMapper;
+import com.samuelchiodini.couponchallenge.coupon.domain.CouponStatus;
+import com.samuelchiodini.couponchallenge.coupon.infrastructure.persistence.CouponJpaRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
+import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasSize;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -27,8 +33,27 @@ class CouponControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private CouponJpaRepository couponJpaRepository;
+
     private String futureDate() {
         return Instant.now().plus(1, ChronoUnit.DAYS).toString();
+    }
+
+    private UUID createCoupon() throws Exception {
+        Map<String, Object> body = Map.of(
+                "code", "ABC123",
+                "description", "desc",
+                "discountValue", new BigDecimal("0.8"),
+                "expirationDate", futureDate());
+
+        MvcResult result = mockMvc.perform(post("/coupon")
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(body)))
+                .andReturn();
+
+        String id = objectMapper.readTree(result.getResponse().getContentAsString()).get("id").asText();
+        return UUID.fromString(id);
     }
 
     @Test
@@ -252,5 +277,45 @@ class CouponControllerTest {
                 .andExpect(jsonPath("$.status").value("ACTIVE"))
                 .andExpect(jsonPath("$.redeemed").value(false))
                 .andExpect(jsonPath("$.id").value(org.hamcrest.Matchers.not(clientSuppliedId)));
+    }
+
+    @Test
+    void deletesAnExistingActiveCoupon() throws Exception {
+        UUID id = createCoupon();
+
+        mockMvc.perform(delete("/coupon/{id}", id))
+                .andExpect(status().isNoContent());
+
+        assertThat(couponJpaRepository.findById(id)).isPresent();
+        assertThat(couponJpaRepository.findById(id).orElseThrow().getStatus())
+                .isEqualTo(CouponStatus.DELETED.name());
+    }
+
+    @Test
+    void deletingTheSameCouponTwiceReturnsConflict() throws Exception {
+        UUID id = createCoupon();
+
+        mockMvc.perform(delete("/coupon/{id}", id))
+                .andExpect(status().isNoContent());
+
+        mockMvc.perform(delete("/coupon/{id}", id))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.error").value("COUPON_ALREADY_DELETED"));
+    }
+
+    @Test
+    void deletingAnIdThatNeverExistedReturnsNotFound() throws Exception {
+        UUID neverExisted = UUID.randomUUID();
+
+        mockMvc.perform(delete("/coupon/{id}", neverExisted))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("COUPON_NOT_FOUND"));
+    }
+
+    @Test
+    void deletingWithAMalformedIdReturnsBadRequest() throws Exception {
+        mockMvc.perform(delete("/coupon/{id}", "abc"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("MALFORMED_REQUEST"));
     }
 }
