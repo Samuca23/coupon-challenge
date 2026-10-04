@@ -3,7 +3,6 @@ package com.samuelchiodini.couponchallenge.coupon.domain;
 import com.samuelchiodini.couponchallenge.coupon.domain.exceptions.InvalidDiscountValueException;
 
 import java.math.BigDecimal;
-import java.util.Objects;
 
 public final class DiscountValue {
 
@@ -24,22 +23,5 @@ public final class DiscountValue {
 
     public BigDecimal value() {
         return value;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof DiscountValue other)) return false;
-        return value.compareTo(other.value) == 0;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(value.stripTrailingZeros());
-    }
-
-    @Override
-    public String toString() {
-        return value.toString();
     }
 }
