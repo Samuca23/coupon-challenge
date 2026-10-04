@@ -171,3 +171,11 @@ Regras:
 
 - Samuel cria o esqueleto do projeto manualmente no Spring Initializr — não gerar o projeto via automação.
 - Ao desenvolver com IA, manter contexto completo do código no chat técnico de entrevista — evitar que a IA execute todo o fluxo sozinha sem o Samuel entender cada decisão (ele precisa defender o código numa conversa técnica depois).
+
+## 11. Observability — decisão de escopo
+
+Avaliamos adicionar uma trilha de auditoria completa (tabela de eventos, quem fez, quando, o quê mudou) — relevante em ecommerce de verdade (rastrear abuso de cupom, suporte ao cliente, compliance). Decisão: **não implementar como feature** neste desafio — é escopo que ninguém pediu, custa tempo e risco numa parte não avaliada, e o próprio desafio avisa que não é sobre criar endpoints extras.
+
+Em vez disso, toda transição de estado relevante do domínio (cupom criado, cupom deletado) emite um **log estruturado leve**: SLF4J, nível INFO, com o identificador do cupom e o timestamp do evento — por exemplo `log.info("coupon {} deleted at {}", coupon.getId(), Instant.now())`, disparado no próprio método de domínio que faz a transição (`Coupon.delete()`, etc.), não espalhado pelo controller.
+
+Isso é intencionalmente pouco: mostra o instinto de observability sem pagar o custo de uma feature não exigida. A auditoria completa (tabela de eventos, consulta por cupom/data) fica documentada aqui como "pensado, não implementado por escopo" — é um ponto de conversa pra entrevista, não um gap escondido.
