@@ -78,6 +78,7 @@ Apenas o endpoint de criação está formalmente documentado no apidog. O endpoi
 - Pode ser deletado a qualquer momento.
 - **Soft delete**: o registro não pode ser perdido do banco — provavelmente via transição de `status` para `DELETED` (o enum de status já inclui `ACTIVE / INACTIVE / DELETED`, então soft delete = mudança de status, não uma flag `deleted` separada nem remoção física).
 - **Não é possível deletar um cupom já deletado** — isso é regra de domínio, não só uma checagem de infraestrutura, e precisa ser testada (vão tentar "quebrar" essa regra).
+- **Concorrência (decisão de estratégia):** a regra acima, sozinha, só cobre duas chamadas *sequenciais* (`Coupon.delete()` no domínio lança exceção se o status já é `DELETED`). Pra cobrir duas chamadas *simultâneas* no mesmo cupom (race condition: ambas leem `ACTIVE` antes de qualquer uma salvar), a entidade JPA (`CouponJpaEntity`, infraestrutura — nunca o `Coupon` de domínio) ganha um campo `@Version`. O adapter de persistência, ao salvar, trata a `OptimisticLockingFailureException` do Spring Data: recarrega o cupom e, se o status atual já é `DELETED`, relança a mesma exceção de domínio de "já deletado" (mesmo contrato de erro pro cliente); senão, propaga o erro normalmente. Domínio decide a regra, banco garante que ela sobrevive à concorrência real.
 
 ## 5. Decisões em aberto (a validar com o Samuel antes/durante o desenvolvimento)
 
@@ -135,10 +136,13 @@ src/main/java/.../coupon/
 
 Este projeto usa Spec-Driven Development via skills próprias em `.claude/skills/`:
 
-1. **`/specify`** — transforma uma regra/requisito em `specs/<NN>-<slug>/spec.md` (regras numeradas e testáveis, contrato, casos de borda, critérios de aceite).
+1. **`/specify`** — transforma uma regra/requisito em `specs/<NN>-<slug>/spec.md` (regras numeradas e testáveis, contrato, casos de borda, critérios de aceite). Antes disso, consulta/propõe `specs/BACKLOG.md` com todas as US do projeto.
 2. **`/plan`** — a partir da spec, gera `specs/<NN>-<slug>/plan.md` (domínio, ports, use case, adapters, testes previstos), respeitando a arquitetura da seção 7.
-3. **`/tasks`** — quebra o plano em `specs/<NN>-<slug>/tasks.md`, uma lista ordenada de tarefas pequenas, cada uma = um commit atômico.
-4. **`/review-commit`** — checklist de arquitetura/testes/tamanho do commit, rodado antes de cada `git commit` e antes de abrir PR.
+3. **`/tasks`** — quebra o plano em `specs/<NN>-<slug>/tasks.md`, uma lista ordenada de tarefas pequenas, cada uma = um commit atômico, e cria a branch `feat/US<NN>-<slug>`.
+4. **`/implementar US<NN>-<slug>`** — implementa, tarefa por tarefa, tudo que está em `tasks.md`, rodando teste depois de cada uma, sem commitar. Termina com um changelog explicando cada decisão.
+5. **`/audit`** — confere divergência entre `spec.md` e o código implementado (regra não implementada, implementada diferente do especificado, ou sem teste). Gera `specs/<NN>-<slug>/audit.md`.
+6. **`/review-commit`** — só roda depois do `/audit` sem divergência pendente: checklist de arquitetura, sugestão de split em commits atômicos (um por tarefa) e mensagens no padrão Conventional Commits, antes de abrir PR.
+7. **`/fechar-us`** — depois do PR mergeado em `develop`, reverifica na fonte (arquivos + git) que todas as etapas realmente aconteceram, e só então marca a US como `concluído` em `specs/BACKLOG.md`.
 
 Nenhum código de produção deve ser escrito antes de existir spec + plano para a feature. Ver `specs/README.md` para a convenção de pastas.
 
@@ -168,3 +172,11 @@ Regras:
 
 - Samuel cria o esqueleto do projeto manualmente no Spring Initializr — não gerar o projeto via automação.
 - Ao desenvolver com IA, manter contexto completo do código no chat técnico de entrevista — evitar que a IA execute todo o fluxo sozinha sem o Samuel entender cada decisão (ele precisa defender o código numa conversa técnica depois).
+
+## 11. Observability — decisão de escopo
+
+Avaliamos adicionar uma trilha de auditoria completa (tabela de eventos, quem fez, quando, o quê mudou) — relevante em ecommerce de verdade (rastrear abuso de cupom, suporte ao cliente, compliance). Decisão: **não implementar como feature** neste desafio — é escopo que ninguém pediu, custa tempo e risco numa parte não avaliada, e o próprio desafio avisa que não é sobre criar endpoints extras.
+
+Em vez disso, toda transição de estado relevante do domínio (cupom criado, cupom deletado) emite um **log estruturado leve**: SLF4J, nível INFO, com o identificador do cupom e o timestamp do evento — por exemplo `log.info("coupon {} deleted at {}", coupon.getId(), Instant.now())`, disparado no próprio método de domínio que faz a transição (`Coupon.delete()`, etc.), não espalhado pelo controller.
+
+Isso é intencionalmente pouco: mostra o instinto de observability sem pagar o custo de uma feature não exigida. A auditoria completa (tabela de eventos, consulta por cupom/data) fica documentada aqui como "pensado, não implementado por escopo" — é um ponto de conversa pra entrevista, não um gap escondido.
