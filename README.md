@@ -9,8 +9,25 @@ API de cupons de desconto — teste técnico com foco em **criação** e **exclu
 - H2 (banco em memória)
 - springdoc-openapi (Swagger UI)
 - JUnit 5 / Mockito / AssertJ + JaCoCo
+- Docker + Docker Compose
 
-## Como rodar localmente
+## Como rodar com Docker
+
+Único pré-requisito: **Docker** (não precisa Java nem Maven instalados).
+
+```bash
+docker compose up --build
+```
+
+Se a porta `8080` já estiver ocupada na sua máquina, mapeie outra sem editar nenhum arquivo:
+
+```bash
+APP_PORT=9090 docker compose up --build
+```
+
+O `docker-compose.yml` só tem um serviço (`app`) porque o H2 roda embutido em memória dentro do próprio processo da aplicação — não há banco separado para orquestrar.
+
+## Como rodar localmente sem Docker
 
 ```bash
 ./mvnw spring-boot:run
@@ -18,7 +35,7 @@ API de cupons de desconto — teste técnico com foco em **criação** e **exclu
 
 Ou pelo IntelliJ: rode a classe `CouponChallengeApplication`.
 
-A aplicação sobe em `http://localhost:8080`.
+A aplicação sobe em `http://localhost:8080` (ou na porta escolhida via `APP_PORT`, se for via Docker).
 
 ## Como rodar os testes e ver a cobertura
 
