@@ -2,7 +2,6 @@ package com.samuelchiodini.couponchallenge.coupon.domain;
 
 import com.samuelchiodini.couponchallenge.coupon.domain.exceptions.InvalidCouponCodeException;
 
-import java.util.Objects;
 import java.util.regex.Pattern;
 
 public final class CouponCode {
@@ -26,23 +25,6 @@ public final class CouponCode {
     }
 
     public String value() {
-        return value;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof CouponCode other)) return false;
-        return value.equals(other.value);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(value);
-    }
-
-    @Override
-    public String toString() {
         return value;
     }
 }
