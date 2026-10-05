@@ -58,6 +58,8 @@ Relatório de cobertura em `target/site/jacoco/index.html`. A regra de cobertura
 - Swagger UI: [`http://localhost:8080/swagger-ui.html`](http://localhost:8080/swagger-ui.html)
 - H2 Console: [`http://localhost:8080/h2-console`](http://localhost:8080/h2-console) — JDBC URL `jdbc:h2:mem:coupondb`, usuário `sa`, sem senha.
 
+> ⚠️ O H2 console está configurado com `web-allow-others: true` para funcionar através do port-mapping do Docker. Isso é aceitável para este ambiente de avaliação local — não é uma configuração apropriada para produção.
+
 ## Documentação completa
 
 Regras de negócio, decisões de arquitetura e o fluxo de desenvolvimento (spec-driven) estão documentados em [`CLAUDE.md`](./CLAUDE.md).
